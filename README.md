@@ -2,4 +2,4 @@
 
 `OLLVM-Project` based on [LLVM](https://github.com/llvm/llvm-project) and [OLLVM](https://github.com/obfuscator-llvm/obfuscator)
 
-[The newest version is 8.0.1](https://github.com/TannerJin/ollvm-project/tree/release/8.x)
+this branch based on `/release/9.x` of `LLVM`
