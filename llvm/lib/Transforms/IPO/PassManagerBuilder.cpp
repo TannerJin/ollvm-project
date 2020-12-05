@@ -464,6 +464,8 @@ void PassManagerBuilder::populateModulePassManager(
   MPM.add(createForceFunctionAttrsLegacyPass());
     
     // OLLVM
+    MPM.add(createLowerSwitchPass()); // Tanner
+    
     MPM.add(createSplitBasicBlock(Split));
     MPM.add(createBogus(BogusControlFlow));
     MPM.add(createFlattening(Flattening));

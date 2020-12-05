@@ -30,8 +30,12 @@ struct Flattening : public FunctionPass {
 
   Flattening() : FunctionPass(ID) {}
   Flattening(bool flag) : FunctionPass(ID) { this->flag = flag; }
+    
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
+        AU.addRequiredID(&LowerSwitchID);
+    }
 
-  bool runOnFunction(Function &F);
+  bool runOnFunction(Function &F) override;
   bool flatten(Function *f);
 };
 }
@@ -39,6 +43,7 @@ struct Flattening : public FunctionPass {
 char Flattening::ID = 0;
 static RegisterPass<Flattening> X("flattening", "Call graph flattening");
 Pass *llvm::createFlattening(bool flag) { return new Flattening(flag); }
+
 
 bool Flattening::runOnFunction(Function &F) {
   Function *tmp = &F;
@@ -66,8 +71,10 @@ bool Flattening::flatten(Function *f) {
   // END OF SCRAMBLER
 
   // Lower switch
-  FunctionPass *lower = createLowerSwitchPass();
+  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
+//  FunctionPass *lower = createLowerSwitchPass();
   lower->runOnFunction(*f);
+    
 
   // Save all original BB
   for (Function::iterator i = f->begin(); i != f->end(); ++i) {
