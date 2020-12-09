@@ -30,6 +30,10 @@ namespace {
       bool flag;
 
       Flattening() : FunctionPass(ID) {
+          // for static RegisterPass<Flattening>
+//          initializeLowerSwitchPass(*PassRegistry::getPassRegistry());
+          
+          // for createFlattening
           initializeFlatteningPass(*PassRegistry::getPassRegistry());
       }
       Flattening(bool flag) : FunctionPass(ID) {
@@ -48,7 +52,7 @@ namespace {
 
 char Flattening::ID = 0;
 
-//static RegisterPass<Flattening> X("flattening", "Call graph flattening");
+static RegisterPass<Flattening> X("flattening", "Call graph flattening"); 
 
 INITIALIZE_PASS_BEGIN(Flattening, "flattening", "Call graph flattening",
                       false, false)
@@ -88,7 +92,6 @@ bool Flattening::flatten(Function *f) {
 //  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
 //  FunctionPass *lower = createLowerSwitchPass();
 //  lower->runOnFunction(*f);
-    
 
   // Save all original BB
   for (Function::iterator i = f->begin(); i != f->end(); ++i) {
