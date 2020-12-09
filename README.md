@@ -4,5 +4,3 @@
 
 ### Version
 [9.0.1](https://github.com/TannerJin/ollvm-project/tree/release/9.x)
-
-[8.0.1](https://github.com/TannerJin/ollvm-project/tree/release/8.x)
