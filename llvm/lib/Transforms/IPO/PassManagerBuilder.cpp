@@ -463,9 +463,7 @@ void PassManagerBuilder::populateModulePassManager(
   // Allow forcing function attributes as a debugging and tuning aid.
   MPM.add(createForceFunctionAttrsLegacyPass());
     
-    // OLLVM
-    MPM.add(createLowerSwitchPass()); // Tanner
-    
+    // OLLVM    
     MPM.add(createSplitBasicBlock(Split));
     MPM.add(createBogus(BogusControlFlow));
     MPM.add(createFlattening(Flattening));

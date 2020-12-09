@@ -24,24 +24,38 @@ using namespace llvm;
 STATISTIC(Flattened, "Functions flattened");
 
 namespace {
-struct Flattening : public FunctionPass {
-  static char ID;  // Pass identification, replacement for typeid
-  bool flag;
+    class Flattening : public FunctionPass {
+    public:
+      static char ID;  // Pass identification, replacement for typeid
+      bool flag;
 
-  Flattening() : FunctionPass(ID) {}
-  Flattening(bool flag) : FunctionPass(ID) { this->flag = flag; }
-    
-    void getAnalysisUsage(AnalysisUsage &AU) const override {
-        AU.addRequiredID(&LowerSwitchID);
-    }
+      Flattening() : FunctionPass(ID) {
+          initializeFlatteningPass(*PassRegistry::getPassRegistry());
+      }
+      Flattening(bool flag) : FunctionPass(ID) {
+          initializeFlatteningPass(*PassRegistry::getPassRegistry());
+          this->flag = flag;
+      }
+        
+      void getAnalysisUsage(AnalysisUsage &AU) const override {
+          AU.addRequiredID(&LowerSwitchID);
+      }
 
-  bool runOnFunction(Function &F) override;
-  bool flatten(Function *f);
-};
+      bool runOnFunction(Function &F) override;
+      bool flatten(Function *f);
+    };
 }
 
 char Flattening::ID = 0;
-static RegisterPass<Flattening> X("flattening", "Call graph flattening");
+
+//static RegisterPass<Flattening> X("flattening", "Call graph flattening");
+
+INITIALIZE_PASS_BEGIN(Flattening, "flattening", "Call graph flattening",
+                      false, false)
+INITIALIZE_PASS_DEPENDENCY(LowerSwitch)
+INITIALIZE_PASS_END(Flattening, "flattening", "Call graph flattening",
+                    false, false)
+
 Pass *llvm::createFlattening(bool flag) { return new Flattening(flag); }
 
 
@@ -71,9 +85,9 @@ bool Flattening::flatten(Function *f) {
   // END OF SCRAMBLER
 
   // Lower switch
-  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
+//  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
 //  FunctionPass *lower = createLowerSwitchPass();
-  lower->runOnFunction(*f);
+//  lower->runOnFunction(*f);
     
 
   // Save all original BB

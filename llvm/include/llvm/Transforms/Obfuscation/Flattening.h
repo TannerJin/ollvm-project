@@ -33,6 +33,7 @@ using namespace std;
 namespace llvm {
     Pass *createFlattening();
     Pass *createFlattening(bool flag);
+    void initializeFlatteningPass(PassRegistry &Registry);
 }
 
 #endif
