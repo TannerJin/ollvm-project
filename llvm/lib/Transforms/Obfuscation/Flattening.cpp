@@ -52,7 +52,7 @@ namespace {
 
 char Flattening::ID = 0;
 
-static RegisterPass<Flattening> X("flattening", "Call graph flattening"); 
+//static RegisterPass<Flattening> X("flattening", "Call graph flattening"); 
 
 INITIALIZE_PASS_BEGIN(Flattening, "flattening", "Call graph flattening",
                       false, false)
