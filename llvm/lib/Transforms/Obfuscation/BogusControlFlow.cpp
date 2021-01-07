@@ -227,7 +227,10 @@ namespace {
      * Add bogus flow to a given basic block, according to the header's description
      */
     virtual void addBogusFlow(BasicBlock * basicBlock, Function &F){
-
+        // Tanner: landing pad
+        if (basicBlock->isLandingPad()) {
+            return;
+        }
 
       // Split the block: first part with only the phi nodes and debug info and terminator
       //                  created by splitBasicBlock. (-> No instruction)
