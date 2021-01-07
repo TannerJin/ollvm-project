@@ -54,28 +54,34 @@ struct Substitution : public FunctionPass {
   void (Substitution::*funcXor[NUMBER_XOR_SUBST])(BinaryOperator *bo);
   bool flag;
 
-  Substitution() : FunctionPass(ID) {}
+  Substitution() : FunctionPass(ID) {
+      initFunctions();
+  }
 
   Substitution(bool flag) : FunctionPass(ID) {
     this->flag = flag;
-    funcAdd[0] = &Substitution::addNeg;
-    funcAdd[1] = &Substitution::addDoubleNeg;
-    funcAdd[2] = &Substitution::addRand;
-    funcAdd[3] = &Substitution::addRand2;
-
-    funcSub[0] = &Substitution::subNeg;
-    funcSub[1] = &Substitution::subRand;
-    funcSub[2] = &Substitution::subRand2;
-
-    funcAnd[0] = &Substitution::andSubstitution;
-    funcAnd[1] = &Substitution::andSubstitutionRand;
-
-    funcOr[0] = &Substitution::orSubstitution;
-    funcOr[1] = &Substitution::orSubstitutionRand;
-
-    funcXor[0] = &Substitution::xorSubstitution;
-    funcXor[1] = &Substitution::xorSubstitutionRand;
+      initFunctions();
   }
+    
+    void initFunctions() {
+        funcAdd[0] = &Substitution::addNeg;
+        funcAdd[1] = &Substitution::addDoubleNeg;
+        funcAdd[2] = &Substitution::addRand;
+        funcAdd[3] = &Substitution::addRand2;
+
+        funcSub[0] = &Substitution::subNeg;
+        funcSub[1] = &Substitution::subRand;
+        funcSub[2] = &Substitution::subRand2;
+
+        funcAnd[0] = &Substitution::andSubstitution;
+        funcAnd[1] = &Substitution::andSubstitutionRand;
+
+        funcOr[0] = &Substitution::orSubstitution;
+        funcOr[1] = &Substitution::orSubstitutionRand;
+
+        funcXor[0] = &Substitution::xorSubstitution;
+        funcXor[1] = &Substitution::xorSubstitutionRand;
+    }
 
   bool runOnFunction(Function &F);
   bool substitute(Function *f);
@@ -236,7 +242,7 @@ void Substitution::addDoubleNeg(BinaryOperator *bo) {
       op = BinaryOperator::Create(Instruction::Add, op, op2, "", bo);
       op = BinaryOperator::CreateNeg(op, "", bo);
   } else {
-      // Tanner: fadd
+      // Tanner: fadd (maybe never called)
       op = CreateFNeg(bo->getOperand(0), "", bo);
       op2 = CreateFNeg(bo->getOperand(1), "", bo);
       op = BinaryOperator::Create(Instruction::FAdd, op, op2, "", bo);
@@ -314,7 +320,7 @@ void Substitution::subNeg(BinaryOperator *bo) {
         op = BinaryOperator::CreateNeg(bo->getOperand(1), "", bo);
         op = BinaryOperator::Create(Instruction::Add, bo->getOperand(0), op, "", bo);
     } else {
-        // Tanner: fsub
+        // Tanner: fsub (maybe never called)
         op = CreateFNeg(bo->getOperand(1), "", bo);
         op = BinaryOperator::Create(Instruction::FAdd, bo->getOperand(0), op, "",
                                 bo);
