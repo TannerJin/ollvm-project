@@ -5,8 +5,6 @@ add_llvm_library(LLVMObfuscation
     Flattening.cpp
     Substitution.cpp
     SplitBasicBlocks.cpp
-    FuncNameRecord.cpp
-    AntiFishHook.cpp
     
     ADDITIONAL_HEADER_DIRS
     ${LLVM_MAIN_INCLUDE_DIR}/llvm/Transforms/Obfuscation

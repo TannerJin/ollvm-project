@@ -59,7 +59,7 @@ char Flattening::ID = 0;
 // Tanner
 INITIALIZE_PASS_BEGIN(Flattening, "flattening", "Call graph flattening",
                       false, false)
-INITIALIZE_PASS_DEPENDENCY(LowerSwitch)
+INITIALIZE_PASS_DEPENDENCY(LowerSwitchLegacyPass)
 INITIALIZE_PASS_END(Flattening, "flattening", "Call graph flattening",
                     false, false)
 

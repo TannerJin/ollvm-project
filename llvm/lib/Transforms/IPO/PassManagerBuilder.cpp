@@ -49,6 +49,15 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 
+// OLLVM
+#include "llvm/Transforms/Obfuscation/Utils.h"
+#include "llvm/Transforms/Obfuscation/CryptoUtils.h"
+#include "llvm/Transforms/Obfuscation/BogusControlFlow.h"
+#include "llvm/Transforms/Obfuscation/Flattening.h"
+#include "llvm/Transforms/Obfuscation/Substitution.h"
+#include "llvm/Transforms/Obfuscation/SplitBasicBlocks.h"
+
+
 using namespace llvm;
 
 cl::opt<bool> RunPartialInlining("enable-partial-inlining", cl::init(false),
@@ -179,6 +188,15 @@ cl::opt<AttributorRunOption> AttributorRun(
 
 extern cl::opt<bool> EnableKnowledgeRetention;
 
+// OLLVM
+static cl::opt<bool> Flattening("fla", cl::init(false), cl::desc("Enable the flattening pass"));
+static cl::opt<bool> BogusControlFlow("bcf", cl::init(false), cl::desc("Enable bogus control flow"));
+static cl::opt<bool> Substitution("sub", cl::init(false), cl::desc("Enable instruction substitutions"));
+static cl::opt<std::string> AesSeed("aesSeed", cl::init(""), cl::desc("seed for the AES-CTR PRNG"));
+static cl::opt<bool> Split("split", cl::init(false), cl::desc("Enable basic block splitting"));
+static cl::opt<bool> AntiFishHook("afh", cl::init(false), cl::desc("Enable the antiFishHook pass"));
+
+
 PassManagerBuilder::PassManagerBuilder() {
     OptLevel = 2;
     SizeLevel = 0;
@@ -209,6 +227,13 @@ PassManagerBuilder::PassManagerBuilder() {
     PerformThinLTO = EnablePerformThinLTO;
     DivergentTarget = false;
     CallGraphProfile = true;
+    
+    // OLLVM
+    if (!AesSeed.empty()) {
+        if (!llvm::cryptoutils->prng_seed(AesSeed.c_str())) {
+            exit(1);
+        }
+    }
 }
 
 PassManagerBuilder::~PassManagerBuilder() {
@@ -517,6 +542,13 @@ void PassManagerBuilder::addFunctionSimplificationPasses(
 
 void PassManagerBuilder::populateModulePassManager(
     legacy::PassManagerBase &MPM) {
+    
+    // OLLVM
+    MPM.add(createSplitBasicBlock(Split));
+    MPM.add(createBogus(BogusControlFlow));
+    MPM.add(createFlattening(Flattening));
+    MPM.add(createSubstitution(Substitution));
+    
   // Whether this is a default or *LTO pre-link pipeline. The FullLTO post-link
   // is handled separately, so just check this is not the ThinLTO post-link.
   bool DefaultOrPreLinkPipeline = !PerformThinLTO;
