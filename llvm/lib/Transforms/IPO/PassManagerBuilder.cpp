@@ -181,6 +181,7 @@ static cl::opt<bool> BogusControlFlow("bcf", cl::init(false), cl::desc("Enable b
 static cl::opt<bool> Substitution("sub", cl::init(false), cl::desc("Enable instruction substitutions"));
 static cl::opt<std::string> AesSeed("aesSeed", cl::init(""), cl::desc("seed for the AES-CTR PRNG"));
 static cl::opt<bool> Split("split", cl::init(false), cl::desc("Enable basic block splitting"));
+static cl::opt<bool> AntiFishHook("afh", cl::init(false), cl::desc("Enable the antiFishHook pass"));
 
 PassManagerBuilder::PassManagerBuilder() {
     OptLevel = 2;
