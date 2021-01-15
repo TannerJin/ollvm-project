@@ -111,8 +111,10 @@ struct Substitution : public FunctionPass {
 }
 
 char Substitution::ID = 0;
+
 static RegisterPass<Substitution> X("substitution", "operators substitution");
 Pass *llvm::createSubstitution(bool flag) { return new Substitution(flag); }
+
 
 bool Substitution::runOnFunction(Function &F) {
    // Check if the percentage is correct

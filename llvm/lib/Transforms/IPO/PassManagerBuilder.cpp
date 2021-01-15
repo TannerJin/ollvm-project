@@ -229,11 +229,11 @@ PassManagerBuilder::PassManagerBuilder() {
     CallGraphProfile = true;
     
     // OLLVM
-    if (!AesSeed.empty()) {
-        if (!llvm::cryptoutils->prng_seed(AesSeed.c_str())) {
-            exit(1);
-        }
-    }
+//    if (!AesSeed.empty()) {
+//        if (!llvm::cryptoutils->prng_seed(AesSeed.c_str())) {
+//            exit(1);
+//        }
+//    }
 }
 
 PassManagerBuilder::~PassManagerBuilder() {
@@ -544,10 +544,10 @@ void PassManagerBuilder::populateModulePassManager(
     legacy::PassManagerBase &MPM) {
     
     // OLLVM
-    MPM.add(createSplitBasicBlock(Split));
-    MPM.add(createBogus(BogusControlFlow));
-    MPM.add(createFlattening(Flattening));
-    MPM.add(createSubstitution(Substitution));
+//    MPM.add(createSplitBasicBlock(Split));
+//    MPM.add(createBogus(BogusControlFlow));
+//    MPM.add(createFlattening(Flattening));
+//    MPM.add(createSubstitution(Substitution));
     
   // Whether this is a default or *LTO pre-link pipeline. The FullLTO post-link
   // is handled separately, so just check this is not the ThinLTO post-link.

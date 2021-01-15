@@ -92,6 +92,9 @@
 
 #include "llvm/Transforms/Obfuscation/BogusControlFlow.h"
 #include "llvm/Transforms/Obfuscation/Utils.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include "llvm/IR/LegacyPassManager.h"
+
 
 // Stats
 #define DEBUG_TYPE "BogusControlFlow"
@@ -111,6 +114,7 @@ ObfProbRate("bcf_prob", cl::desc("Choose the probability [%] each basic blocks w
 
 static cl::opt<int>
 ObfTimes("bcf_loop", cl::desc("Choose how many time the -bcf pass loop on a function"), cl::value_desc("number of times"), cl::init(defaultObfTime), cl::Optional);
+
 
 namespace {
   struct BogusControlFlow : public FunctionPass {
@@ -605,8 +609,18 @@ namespace {
 }
 
 char BogusControlFlow::ID = 0;
+
+// for opt
 static RegisterPass<BogusControlFlow> X("boguscf", "inserting bogus control flow");
 
+// for clang
+static RegisterStandardPasses Y(PassManagerBuilder::EP_EarlyAsPossible,
+                                [](const PassManagerBuilder &Builder,
+                                   legacy::PassManagerBase &PM) {
+                                    PM.add(new BogusControlFlow(true));
+                                });
+
+// for passManager(toolchain)
 Pass *llvm::createBogus() {
   return new BogusControlFlow();
 }
@@ -614,3 +628,4 @@ Pass *llvm::createBogus() {
 Pass *llvm::createBogus(bool flag) {
   return new BogusControlFlow(flag);
 }
+
