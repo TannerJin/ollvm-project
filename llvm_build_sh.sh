@@ -16,10 +16,11 @@ function build_xcode_toolchain() {
     SRC_DIR=$PWD/$llvmProject
     BUILD_DIR=$PWD/$llvmProject-XcodeToolchain
     
+    rm -rf $BUILD_DIR/*
     mkdir -p $BUILD_DIR && cd $_
     
     cmake -G "Ninja" \
-    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;compiler-rt" \
     -DCMAKE_BUILD_TYPE=MinSizeRel \
     -DLLVM_APPEND_VC_REV=on \
     -DLLDB_USE_SYSTEM_DEBUGSERVER=YES \
@@ -27,10 +28,10 @@ function build_xcode_toolchain() {
     -DCMAKE_INSTALL_PREFIX=~/Library/Developer/ \
     $SRC_DIR/llvm
     
-    echo "Ninja build llvm..."
+    echo "Ninja build xcode_toolchain..."
     ninja
     
-    echo "Install xcode_toolchain..."
+    echo "Ninja Install xcode_toolchain..."
     ninja install-xcode-toolchain
 }
 
@@ -67,7 +68,7 @@ function build_clang() {
     -DCMAKE_C_COMPILER=$HOST_COMPILER_PATH/clang \
     -DCMAKE_CXX_COMPILER=$HOST_COMPILER_PATH/clang++ \
     -DLLVM_TARGETS_TO_BUILD="X86" \
-    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;compiler-rt" \
     -DLLDB_INCLUDE_TESTS=OFF \
     $SRC_DIR/llvm && $NINJA
 }
@@ -79,6 +80,7 @@ function build_xcode() {
     SRC_DIR=$PWD/$llvmProject
     BUILD_DIR=$PWD/$llvmProject-Xcode
     
+    rm -rf $BUILD_DIR/*
     mkdir -p $BUILD_DIR && cd $_
     
     cmake -G "Xcode" \
