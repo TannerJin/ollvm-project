@@ -14,13 +14,13 @@
   
 * Anti-ObjcHook
 
-```objc
-@interface JailbreakCheck : NSObject
+   ```objc
+   @interface JailbreakCheck : NSObject
 
-+ (Bool)isJailbreak __attribute__((objc_direct));
+   + (Bool)isJailbreak __attribute__((objc_direct));
 
-@end
-```
+   @end
+   ```
 
 * afh(私有)
 
