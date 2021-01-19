@@ -755,6 +755,11 @@ void CodeGenFunction::StartObjCMethod(const ObjCMethodDecl *OMD,
     DebugInfo = nullptr; // disable debug info indefinitely for this function
 
   llvm::Function *Fn = CGM.getObjCRuntime().GenerateMethod(OMD, CD);
+    
+    // Tanner (给Objective-C添加__attribute__((__annotate__)) 功能
+    if (OMD->hasAttr<AnnotateAttr>()) {
+        CGM.AddGlobalAnnotations(OMD, Fn);
+    }
 
   const CGFunctionInfo &FI = CGM.getTypes().arrangeObjCMethodDeclaration(OMD);
   if (OMD->isDirectMethod()) {

@@ -1315,7 +1315,8 @@ public:
 
   /// Add global annotations that are set on D, for the global GV. Those
   /// annotations are emitted during finalization of the LLVM code.
-  void AddGlobalAnnotations(const ValueDecl *D, llvm::GlobalValue *GV);
+    // Tanner: ValueDecl -> Decl
+  void AddGlobalAnnotations(const Decl *D, llvm::GlobalValue *GV);
 
   bool isInSanitizerBlacklist(SanitizerMask Kind, llvm::Function *Fn,
                               SourceLocation Loc) const;
