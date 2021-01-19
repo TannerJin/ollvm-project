@@ -33,5 +33,5 @@
 
 3. support `Enable Index-While-Building Functionality`
 
-2. support `__attribute__((__annotate__(("bcf; fla"))))` for ObjCMethod
+2. support `__attribute__((__annotate__(("bcf; fla"; "sub"; "afh"))))` for ObjCMethod
 
