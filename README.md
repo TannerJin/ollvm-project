@@ -1,6 +1,6 @@
 ### OLLVM-Project
 
-`OLLVM-Project` based on [LLVM](https://github.com/llvm/llvm-project) and [OLLVM](https://github.com/obfuscator-llvm/obfuscator)
+`OLLVM-Project` based on [LLVM](https://github.com/llvm/llvm-project) and [obfuscator](https://github.com/obfuscator-llvm/obfuscator)
 
 ### Install 
 * clang
