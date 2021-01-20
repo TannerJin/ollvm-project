@@ -23,3 +23,5 @@
 * [9.0.1](https://github.com/TannerJin/ollvm-project/tree/release/9.x)    
 
 * [11.0.0](https://github.com/TannerJin/ollvm-project/tree/release/11.0)
+
+* [apple_12.0.0](https://github.com/TannerJin/ollvm-project/tree/release/apple_12.0.0)
