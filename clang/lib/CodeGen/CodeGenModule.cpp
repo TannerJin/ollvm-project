@@ -2470,7 +2470,8 @@ llvm::Constant *CodeGenModule::EmitAnnotateAttr(llvm::GlobalValue *GV,
   return llvm::ConstantStruct::getAnon(Fields);
 }
 
-void CodeGenModule::AddGlobalAnnotations(const ValueDecl *D,
+// Tanner: ValueDecl -> Decl
+void CodeGenModule::AddGlobalAnnotations(const Decl *D,
                                          llvm::GlobalValue *GV) {
   assert(D->hasAttr<AnnotateAttr>() && "no annotate attribute");
   // Get the struct elements for these annotations.

@@ -755,9 +755,14 @@ void CodeGenFunction::StartObjCMethod(const ObjCMethodDecl *OMD,
     DebugInfo = nullptr; // disable debug info indefinitely for this function
 
   llvm::Function *Fn = CGM.getObjCRuntime().GenerateMethod(OMD, CD);
-
+    
+    // Tanner (给Objective-C添加__attribute__((__annotate__)) 功能
+    if (OMD->hasAttr<AnnotateAttr>()) {
+        CGM.AddGlobalAnnotations(OMD, Fn);
+    }
+    
   const CGFunctionInfo &FI = CGM.getTypes().arrangeObjCMethodDeclaration(OMD);
-  if (OMD->isDirectMethod()) {
+  if (OMD->isDirectMethod()) {  // Tanner: __attribute__((objc_direct)) 实现
     Fn->setVisibility(llvm::Function::HiddenVisibility);
     CGM.SetLLVMFunctionAttributes(OMD, FI, Fn);
     CGM.SetLLVMFunctionAttributesForDefinition(OMD, Fn);
@@ -776,7 +781,7 @@ void CodeGenFunction::StartObjCMethod(const ObjCMethodDecl *OMD,
   StartFunction(OMD, OMD->getReturnType(), Fn, FI, args,
                 OMD->getLocation(), StartLoc);
 
-  if (OMD->isDirectMethod()) {
+  if (OMD->isDirectMethod()) {  // Tanner: __attribute__((objc_direct)) 实现
     // This function is a direct call, it has to implement a nil check
     // on entry.
     //

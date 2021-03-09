@@ -3,6 +3,7 @@
 #include <sstream>
 #include "llvm/IR/Module.h"
 
+
 // Shamefully borrowed from ../Scalar/RegToMem.cpp :(
 bool valueEscapes(Instruction *Inst) {
   BasicBlock *BB = Inst->getParent();
@@ -55,7 +56,7 @@ void fixStack(Function *f) {
 
 std::string readAnnotate(Function *f) {
   std::string annotation = "";
-
+    
   // Get annotation variable
   GlobalVariable *glob =
       f->getParent()->getGlobalVariable("llvm.global.annotations");

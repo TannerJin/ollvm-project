@@ -614,11 +614,11 @@ char BogusControlFlow::ID = 0;
 static RegisterPass<BogusControlFlow> X("boguscf", "inserting bogus control flow");
 
 // for clang
-static RegisterStandardPasses Y(PassManagerBuilder::EP_EarlyAsPossible,
-                                [](const PassManagerBuilder &Builder,
-                                   legacy::PassManagerBase &PM) {
-                                    PM.add(new BogusControlFlow(true));
-                                });
+//static RegisterStandardPasses Y(PassManagerBuilder::EP_EarlyAsPossible,
+//                                [](const PassManagerBuilder &Builder,
+//                                   legacy::PassManagerBase &PM) {
+//                                    PM.add(new BogusControlFlow(true));
+//                                });
 
 // for passManager(toolchain)
 Pass *llvm::createBogus() {

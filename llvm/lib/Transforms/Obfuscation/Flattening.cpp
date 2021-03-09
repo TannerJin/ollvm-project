@@ -33,10 +33,7 @@ namespace {
       Flattening() : FunctionPass(ID) {
           // Tanner
           // for static RegisterPass<Flattening>
-//          initializeLowerSwitchPass(*PassRegistry::getPassRegistry());
-          
-          // for createFlattening
-          initializeFlatteningPass(*PassRegistry::getPassRegistry());
+//          initializeLowerSwitchLegacyPassPass(*PassRegistry::getPassRegistry());
       }
       Flattening(bool flag) : FunctionPass(ID) {
           initializeFlatteningPass(*PassRegistry::getPassRegistry());
@@ -54,14 +51,14 @@ namespace {
 
 char Flattening::ID = 0;
 
-//static RegisterPass<Flattening> X("flattening", "Call graph flattening"); 
+static RegisterPass<Flattening> X("flattening", "Call graph flattening");
 
 // Tanner
 INITIALIZE_PASS_BEGIN(Flattening, "flattening", "Call graph flattening",
-                      false, false)
+                      true, true)
 INITIALIZE_PASS_DEPENDENCY(LowerSwitchLegacyPass)
 INITIALIZE_PASS_END(Flattening, "flattening", "Call graph flattening",
-                    false, false)
+                    true, true)
 
 Pass *llvm::createFlattening(bool flag) { return new Flattening(flag); }
 
@@ -71,10 +68,9 @@ bool Flattening::runOnFunction(Function &F) {
   // Do we obfuscate
   if (toObfuscate(flag, tmp, "fla")) {
     if (flatten(tmp)) {
-      ++Flattened;
+        ++Flattened;
     }
   }
-
   return false;
 }
 
@@ -92,24 +88,29 @@ bool Flattening::flatten(Function *f) {
   // END OF SCRAMBLER
 
   // Lower switch
-//  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
-//  FunctionPass *lower = createLowerSwitchPass();
-//  lower->runOnFunction(*f);
+  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
+//  FunctionPass *lower = createLowerSwitchPass();  // Old
+  lower->runOnFunction(*f);
 
   // Save all original BB
   for (Function::iterator i = f->begin(); i != f->end(); ++i) {
-    BasicBlock *tmp = &*i;
-    origBB.push_back(tmp);
+      BasicBlock *tmp = &*i;
+      origBB.push_back(tmp);
 
-    BasicBlock *bb = &*i;
-    if (isa<InvokeInst>(bb->getTerminator())) {
-      return false;
-    }
+      BasicBlock *bb = &*i;
+      Instruction *Ins = bb->getTerminator();
+      bool isBr = isa<BranchInst>(Ins);
+      bool isRet = isa<ReturnInst>(Ins);
+      bool isUnreach = isa<UnreachableInst>(Ins);
+      
+      if (!isBr && !isRet && !isUnreach) {
+          return false;
+      }
   }
 
   // Nothing to flatten
   if (origBB.size() <= 1) {
-    return false;
+      return false;
   }
 
   // Remove first BB
@@ -122,20 +123,20 @@ bool Flattening::flatten(Function *f) {
   // If main begin with an if
   BranchInst *br = NULL;
   if (isa<BranchInst>(insert->getTerminator())) {
-    br = cast<BranchInst>(insert->getTerminator());
+      br = cast<BranchInst>(insert->getTerminator());
   }
 
   if ((br != NULL && br->isConditional()) ||
       insert->getTerminator()->getNumSuccessors() > 1) {
-    BasicBlock::iterator i = insert->end();
-    --i;
-
-    if (insert->size() > 1) {
+      BasicBlock::iterator i = insert->end();
       --i;
-    }
 
-    BasicBlock *tmpBB = insert->splitBasicBlock(i, "first");
-    origBB.insert(origBB.begin(), tmpBB);
+      if (insert->size() > 1) {
+          --i;
+      }
+
+      BasicBlock *tmpBB = insert->splitBasicBlock(i, "first");
+      origBB.insert(origBB.begin(), tmpBB);
   }
 
   // Remove jump
