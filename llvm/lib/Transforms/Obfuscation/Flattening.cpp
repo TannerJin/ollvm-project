@@ -36,7 +36,7 @@ namespace {
 //          initializeLowerSwitchPass(*PassRegistry::getPassRegistry());
           
           // for createFlattening
-          initializeFlatteningPass(*PassRegistry::getPassRegistry());
+//          initializeFlatteningPass(*PassRegistry::getPassRegistry());
       }
       Flattening(bool flag) : FunctionPass(ID) {
           initializeFlatteningPass(*PassRegistry::getPassRegistry());
@@ -92,9 +92,9 @@ bool Flattening::flatten(Function *f) {
   // END OF SCRAMBLER
 
   // Lower switch
-//  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
+  FunctionPass *lower = (FunctionPass *)getResolver()->findImplPass(&LowerSwitchID);  // Tanner
 //  FunctionPass *lower = createLowerSwitchPass();
-//  lower->runOnFunction(*f);
+  lower->runOnFunction(*f);
 
   // Save all original BB
   for (Function::iterator i = f->begin(); i != f->end(); ++i) {

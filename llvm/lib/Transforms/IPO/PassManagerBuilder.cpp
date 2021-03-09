@@ -520,8 +520,8 @@ void PassManagerBuilder::populateModulePassManager(
     
     // OLLVM
     MPM.add(createSplitBasicBlock(Split));
-    MPM.add(createBogus(BogusControlFlow));
     MPM.add(createFlattening(Flattening));
+    MPM.add(createBogus(BogusControlFlow));
 
   // If all optimizations are disabled, just run the always-inline pass and,
   // if enabled, the function merging pass.
