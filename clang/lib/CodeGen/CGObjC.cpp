@@ -760,7 +760,7 @@ void CodeGenFunction::StartObjCMethod(const ObjCMethodDecl *OMD,
     if (OMD->hasAttr<AnnotateAttr>()) {
         CGM.AddGlobalAnnotations(OMD, Fn);
     }
-    
+
   const CGFunctionInfo &FI = CGM.getTypes().arrangeObjCMethodDeclaration(OMD);
   if (OMD->isDirectMethod()) {  // Tanner: __attribute__((objc_direct)) 实现
     Fn->setVisibility(llvm::Function::HiddenVisibility);
