@@ -25,6 +25,9 @@
 * -afh(私有)
 
   > Anti-FishHook
+  
+* -och(私有)
+  > Objective-C调用反IDA
 
 
 ### Features   
