@@ -27,7 +27,7 @@
   > Anti-FishHook
   
 * -och(私有)
-  > Objective-C调用反IDA
+  > hidden Objective-C call
 
 
 ### Features   
