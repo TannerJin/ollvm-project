@@ -21,13 +21,21 @@
 
    @end
    ```
+   
+* Obfuscate Objc-Class Name
+  ```objc
+  __attribute__((objc_runtime_name("Obfuscate Name")))
+  @interface JailbreakCheck : NSObjec
+  
+  @end
+  ```
 
 * -afh(私有)
 
-  > Anti-FishHook
+  > Anti-FishHook (非`dlsym`方式)
   
 * -och(私有)
-  > hidden Objective-C call
+  > Objective-C Call Hidden
 
 
 ### Features   
