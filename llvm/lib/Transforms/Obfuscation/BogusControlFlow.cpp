@@ -516,7 +516,7 @@ namespace {
         //  The global values
         Type *varType = Type::getInt32Ty(M.getContext());
         
-        uint32_t base_x = cryptoutils->get_char();
+        uint32_t base_x = cryptoutils->get_uint32_t();
         uint32_t base_y = cryptoutils->get_uint32_t();
 
         GlobalVariable *baseX = new GlobalVariable(M, varType, false, GlobalValue::PrivateLinkage, ConstantInt::get(varType, base_x, false), "K");
