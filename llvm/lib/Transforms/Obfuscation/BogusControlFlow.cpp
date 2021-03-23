@@ -513,25 +513,16 @@ namespace {
       // and the functions.
       DEBUG_WITH_TYPE("gen", errs()<<"bcf: Starting doFinalization...\n");
 
-      //  The global values
-      Type *varType = Type::getInt32Ty(M.getContext());
-      Twine * varX = new Twine("k");
-      Twine * varY = new Twine("s");
-      Value * x1 =ConstantInt::get(Type::getInt32Ty(M.getContext()), 0, false);
-      Value * y1 =ConstantInt::get(Type::getInt32Ty(M.getContext()), 0, false);
+        //  The global values
+        Type *varType = Type::getInt32Ty(M.getContext());
+        
+        uint32_t base_x = cryptoutils->get_char();
+        uint32_t base_y = cryptoutils->get_uint32_t();
 
-      GlobalVariable     * x = new GlobalVariable(M, varType, false,
-          GlobalValue::CommonLinkage, (Constant * )x1,
-          *varX);
-      GlobalVariable     * y = new GlobalVariable(M, varType, false,
-          GlobalValue::CommonLinkage, (Constant * )y1,
-          *varY);
-
+        GlobalVariable *baseX = new GlobalVariable(M, varType, false, GlobalValue::PrivateLinkage, ConstantInt::get(varType, base_x, false), "K");
+        GlobalVariable *baseY = new GlobalVariable(M, varType, false, GlobalValue::PrivateLinkage, ConstantInt::get(varType, base_y, false), "S");
 
       std::vector<Instruction*> toEdit, toDelete;
-      BinaryOperator *op,*op1 = NULL;
-      LoadInst * opX , * opY;
-      ICmpInst * condition, * condition2;
       // Looking for the conditions and branches to transform
       for(Module::iterator mi = M.begin(), me = M.end(); mi != me; ++mi){
         for(Function::iterator fi = mi->begin(), fe = mi->end(); fi != fe; ++fi){
@@ -559,35 +550,66 @@ namespace {
           */
         }
       }
+        
+        LoadInst * opX , * opY;
       // Replacing all the branches we found
-      for(std::vector<Instruction*>::iterator i =toEdit.begin();i!=toEdit.end();++i){
-        //if y < 10 || x*(x+1) % 2 == 0
-        opX = new LoadInst(varType, (Value *)x, "", (*i));
-        opY = new LoadInst(varType, (Value *)y, "", (*i));
+      for(std::vector<Instruction*>::iterator i =toEdit.begin();i!=toEdit.end();++i) {
+          // Tanner: update
+          Type *int32Type = varType;
+          opX = new LoadInst(varType, (Value *)baseX, "", (*i));
+          opY = new LoadInst(varType, (Value *)baseY, "", (*i));
+          
+          // x
+          uint32_t _x = cryptoutils->get_uint32_t();
+          Value *X = BinaryOperator::CreateSub(ConstantInt::get(int32Type, _x), opX, "", (*i));
+          // y
+          uint32_t _y = cryptoutils->get_uint32_t();
+          Value *Y = BinaryOperator::CreateSub(ConstantInt::get(int32Type, _y), opY, "", (*i));
+          
+          bool _condition = (_x-base_x) >= (_y-base_y); // X >= Y
 
-        op = BinaryOperator::Create(Instruction::Sub, (Value *)opX,
-            ConstantInt::get(Type::getInt32Ty(M.getContext()), 1,
-              false), "", (*i));
-        op1 = BinaryOperator::Create(Instruction::Mul, (Value *)opX, op, "", (*i));
-        op = BinaryOperator::Create(Instruction::URem, op1,
-            ConstantInt::get(Type::getInt32Ty(M.getContext()), 2,
-              false), "", (*i));
-        condition = new ICmpInst((*i), ICmpInst::ICMP_EQ, op,
-            ConstantInt::get(Type::getInt32Ty(M.getContext()), 0,
-              false));
-        condition2 = new ICmpInst((*i), ICmpInst::ICMP_SLT, opY,
-            ConstantInt::get(Type::getInt32Ty(M.getContext()), 10,
-              false));
-        op1 = BinaryOperator::Create(Instruction::Or, (Value *)condition,
-            (Value *)condition2, "", (*i));
+          Value *lshr;
+          if ((_x-base_x) >= 32) {
+              uint32_t res = (_x-base_x)-32;
+              lshr = BinaryOperator::CreateSub(X, ConstantInt::get(int32Type, res), "" , (*i));
+              
+          } else {
+              uint32_t res = 32-(_x-base_x);
+              lshr = BinaryOperator::CreateAdd(ConstantInt::get(int32Type, res), X, "" , (*i));
+          }
+          
+          BinaryOperator *boY = BinaryOperator::Create(Instruction::LShr, Y, lshr, "", (*i));  // Tanner: _y >> 32
+          ICmpInst *conditionY;
+          if (_condition) {
+              conditionY = new ICmpInst((*i), ICmpInst::ICMP_NE, boY, ConstantInt::get(int32Type, 0)); // false
+          } else {
+              conditionY = new ICmpInst((*i), ICmpInst::ICMP_EQ, boY, ConstantInt::get(int32Type, 0)); // true
+          }
+          
+          Value *sub = BinaryOperator::CreateSub(X, Y, "", (*i));  // (_x-base_x) - (_y-base_y)
+          BinaryOperator *boX2 = BinaryOperator::CreateLShr(sub, ConstantInt::get(int32Type, 1), "", (*i));
+          
+          if (_condition) {
+              // boX2 >= 0
+              ICmpInst *conditionX = new ICmpInst((*i), ICmpInst::ICMP_ULT, boX2, ConstantInt::get(int32Type, 0));  // false
 
-        BranchInst::Create(((BranchInst*)*i)->getSuccessor(0),
-            ((BranchInst*)*i)->getSuccessor(1),(Value *) op1,
-            ((BranchInst*)*i)->getParent());
-        DEBUG_WITH_TYPE("gen", errs() << "bcf: Erase branch instruction:"
-            << *((BranchInst*)*i) << "\n");
-        (*i)->eraseFromParent(); // erase the branch
+              Value *condition = BinaryOperator::CreateAnd(conditionX, conditionY, "", (*i));
+              BranchInst::Create(((BranchInst*)*i)->getSuccessor(1),
+                          ((BranchInst*)*i)->getSuccessor(0), condition,
+                          ((BranchInst*)*i)->getParent());
+          } else {
+              // boX2 < 0
+              ICmpInst *conditionX = new ICmpInst((*i), ICmpInst::ICMP_SLT, boX2, ConstantInt::get(int32Type, 0));  // true
+
+              Value *condition = BinaryOperator::CreateOr(conditionX, conditionY, "", (*i));
+              BranchInst::Create(((BranchInst*)*i)->getSuccessor(0),
+                          ((BranchInst*)*i)->getSuccessor(1), condition,
+                          ((BranchInst*)*i)->getParent());
+          }
+          
+          (*i)->eraseFromParent();
       }
+        
       // Erase all the associated conditions we found
       for(std::vector<Instruction*>::iterator i =toDelete.begin();i!=toDelete.end();++i){
         DEBUG_WITH_TYPE("gen", errs() << "bcf: Erase condition instruction:"
