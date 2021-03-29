@@ -551,62 +551,49 @@ namespace {
         }
       }
         
-        LoadInst * opX , * opY;
       // Replacing all the branches we found
       for(std::vector<Instruction*>::iterator i =toEdit.begin();i!=toEdit.end();++i) {
           // Tanner: update
           Type *int32Type = varType;
-          opX = new LoadInst(varType, (Value *)baseX, "", (*i));
-          opY = new LoadInst(varType, (Value *)baseY, "", (*i));
           
           // x
+          LoadInst *opX = new LoadInst(varType, (Value *)baseX, "", (*i));
           uint32_t _x = cryptoutils->get_uint32_t();
-          Value *X = BinaryOperator::CreateSub(ConstantInt::get(int32Type, _x), opX, "", (*i));
+          Value *X;
+          uint32_t x_sub;
+          if (_x >= base_x) {
+              x_sub = _x - base_x;
+              X = BinaryOperator::CreateSub(ConstantInt::get(int32Type, _x), opX, "", (*i));
+          } else {
+              x_sub = base_x - _x;
+              X = BinaryOperator::CreateSub(opX, ConstantInt::get(int32Type, _x), "", (*i));
+          }
           // y
+          LoadInst *opY = new LoadInst(varType, (Value *)baseY, "", (*i));
           uint32_t _y = cryptoutils->get_uint32_t();
-          Value *Y = BinaryOperator::CreateSub(ConstantInt::get(int32Type, _y), opY, "", (*i));
-          
-          bool _condition = (_x-base_x) >= (_y-base_y); // X >= Y
+          Value *Y;
+          uint32_t y_sub;
+          if (_y >= base_y) {
+              y_sub = _y - base_y;
+              Y = BinaryOperator::CreateSub(ConstantInt::get(int32Type, _y), opY, "", (*i));
+          } else {
+              y_sub = base_y - _y;
+              Y = BinaryOperator::CreateSub(opY, ConstantInt::get(int32Type, _y), "", (*i));
+          }
 
-          Value *lshr;
-          if ((_x-base_x) >= 32) {
-              uint32_t res = (_x-base_x)-32;
-              lshr = BinaryOperator::CreateSub(X, ConstantInt::get(int32Type, res), "" , (*i));
-              
-          } else {
-              uint32_t res = 32-(_x-base_x);
-              lshr = BinaryOperator::CreateAdd(ConstantInt::get(int32Type, res), X, "" , (*i));
-          }
-          
-          BinaryOperator *boY = BinaryOperator::Create(Instruction::LShr, Y, lshr, "", (*i));  // Tanner: _y >> 32
-          ICmpInst *conditionY;
-          if (_condition) {
-              conditionY = new ICmpInst((*i), ICmpInst::ICMP_NE, boY, ConstantInt::get(int32Type, 0)); // false
-          } else {
-              conditionY = new ICmpInst((*i), ICmpInst::ICMP_EQ, boY, ConstantInt::get(int32Type, 0)); // true
-          }
-          
-          Value *sub = BinaryOperator::CreateSub(X, Y, "", (*i));  // (_x-base_x) - (_y-base_y)
-          BinaryOperator *boX2 = BinaryOperator::CreateLShr(sub, ConstantInt::get(int32Type, 1), "", (*i));
+          // cmp
+          bool _condition = x_sub >= y_sub; // X >= Y
+          ICmpInst *conditionY = new ICmpInst((*i), ICmpInst::ICMP_UGE, X, Y);  // true or false
           
           if (_condition) {
-              // boX2 >= 0
-              ICmpInst *conditionX = new ICmpInst((*i), ICmpInst::ICMP_ULT, boX2, ConstantInt::get(int32Type, 0));  // false
-
-              Value *condition = BinaryOperator::CreateAnd(conditionX, conditionY, "", (*i));
-              BranchInst::Create(((BranchInst*)*i)->getSuccessor(1),
-                          ((BranchInst*)*i)->getSuccessor(0), condition,
-                          ((BranchInst*)*i)->getParent());
-          } else {
-              // boX2 < 0
-              ICmpInst *conditionX = new ICmpInst((*i), ICmpInst::ICMP_SLT, boX2, ConstantInt::get(int32Type, 0));  // true
-
-              Value *condition = BinaryOperator::CreateOr(conditionX, conditionY, "", (*i));
               BranchInst::Create(((BranchInst*)*i)->getSuccessor(0),
-                          ((BranchInst*)*i)->getSuccessor(1), condition,
+                          ((BranchInst*)*i)->getSuccessor(1), conditionY,
+                          ((BranchInst*)*i)->getParent());
+          } else {
+              BranchInst::Create(((BranchInst*)*i)->getSuccessor(1),
+                          ((BranchInst*)*i)->getSuccessor(0), conditionY,
                           ((BranchInst*)*i)->getParent());
           }
-          
           (*i)->eraseFromParent();
       }
         
