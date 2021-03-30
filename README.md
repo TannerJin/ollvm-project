@@ -32,10 +32,10 @@
 
 * -afh(私有)
 
-  > Anti-FishHook (非`dlsym`方式)
+  > 反FishHook & C函数调用混淆
   
 * -och(私有)
-  > Objective-C Call Hidden
+  > Objective-C Call Hidden (OC 函数调用混淆)
 
 
 ### Features   
